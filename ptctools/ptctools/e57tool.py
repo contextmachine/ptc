@@ -1,8 +1,11 @@
 import sys
 import typing
-
+sys.path.extend(["/root/miniconda3/envs/open3d/bin","/root/miniconda3/envs/open3d/lib","/root/miniconda3/envs/open3d"])
 import numpy as np
 import open3d as o3d
+import cmd
+
+cmd.Cmd("conda activate open3d")
 import pye57
 import os
 import time
@@ -13,12 +16,12 @@ import utils
 import logging, syslog
 
 
-def convert(name, path, save_path='ply', write=True, **kwargs):
+def convert(name, path, save_path='ply', write=False):
     prefix = path
     s = time.time()
     ptcm = o3d.geometry.PointCloud()
 
-    for ptc in merge(pye57.E57(prefix + "/" + name + ".e57", 'r'), **kwargs):
+    for ptc in merge(pye57.E57(prefix + "/" + name + ".e57", 'r')):
         ptcm += ptc
     if write:
         o3d.io.write_point_cloud(save_path + "/" + name + '.ply', ptcm)
@@ -30,7 +33,7 @@ def convert(name, path, save_path='ply', write=True, **kwargs):
     return ptcm
 
 
-def multi_read(search_path='data', voxel_size=0.05, **kwargs) -> typing.List[o3d.geometry.PointCloud]:
+def multi_read(search_path='data', write=False) -> typing.List[o3d.geometry.PointCloud]:
     names = list(utils.search(search_path, prefix='e57'))
     print(names)
     geoms = []
@@ -38,7 +41,7 @@ def multi_read(search_path='data', voxel_size=0.05, **kwargs) -> typing.List[o3d
     for i, name in enumerate(names):
         try:
             print(f'\n\n[{i}] {name} :\n')
-            pcd = convert(name, path=search_path, **kwargs)
+            pcd = convert(name, path=search_path,write=write)
 
             geoms.append(pcd)
         except:
@@ -53,7 +56,7 @@ def multi_read(search_path='data', voxel_size=0.05, **kwargs) -> typing.List[o3d
 
 
 
-def merge(scan, vox_size=0.05, knn=30):
+def merge(scan):
 
     for i in utils.progressbar(range(scan.scan_count), "computing", 40):
 
@@ -84,9 +87,9 @@ def merge(scan, vox_size=0.05, knn=30):
         #prefix.cout = "down sampling"
 
 
-        dptci = ptci.random_down_sample(0.7)
+        #dptci = ptci.random_down_sample(0.7)
 
         #prefix.cout = "estimate normals"
-        dptci.estimate_normals(KDTreeSearchParamKNN(knn))
+        #ptci.estimate_normals(KDTreeSearchParamKNN(knn))
 
-        yield dptci
+        yield ptci

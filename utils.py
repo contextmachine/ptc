@@ -7,9 +7,11 @@ from typing import Iterable, Iterator
 def search(path, prefix="e57"):
     dirs = os.scandir(path)
     for d in dirs:
-        name, pref = d.name.split('.')
-        if pref == prefix:
-            yield name
+        try:
+            name, pref = d.name.split('.')
+            if pref == prefix:
+                yield name
+        finally: continue
 
 
 def progressbar(it, prefix="", size=60, out=sys.stdout):  # Python3.6+
